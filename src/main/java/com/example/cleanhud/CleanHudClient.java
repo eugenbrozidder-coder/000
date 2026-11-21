@@ -48,6 +48,7 @@ public class CleanHudClient implements ClientModInitializer {
         public int accent = 0;
         public String discordAppId = "";
         public boolean fpsBoost = false;
+        public boolean showBrand = true, showStats = true, showCoords = true, showTime = true;
         public int[] prev = null;
     }
     record El(String id, Supplier<List<String>> lines) {}
@@ -98,8 +99,11 @@ public class CleanHudClient implements ClientModInitializer {
                 "key.cleanhud.toggle", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, "category.cleanhud"));
         KeyBinding theme = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.cleanhud.theme", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_CONTROL, "category.cleanhud"));
+        KeyBinding clickGui = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.cleanhud.clickgui", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, "category.cleanhud"));
         ClientTickEvents.END_CLIENT_TICK.register(c -> {
             while (toggle.wasPressed()) enabled = !enabled;
+            while (clickGui.wasPressed()) c.setScreen(new CleanHudClickGui());
             while (theme.wasPressed()) { cfg.accent = (cfg.accent + 1) % ACCENTS.length; save(); }
             if (!fontChecked && c.getOverlay() == null) { fontChecked = true; enableFontPack(c); }
             if (++ticks % 20 == 0) {
@@ -185,6 +189,7 @@ public class CleanHudClient implements ClientModInitializer {
         if (!enabled || mc.player == null || mc.options.hudHidden) return;
         boolean edit = mc.currentScreen instanceof ChatScreen;
         for (El el : ELEMENTS) {
+            if (!isElementEnabled(el.id())) continue;
             List<String> lines = el.lines().get();
             if (lines.isEmpty()) continue;
             Pos p = cfg.pos.get(el.id());
@@ -353,6 +358,31 @@ public class CleanHudClient implements ClientModInitializer {
             cfg.fpsBoost = c.fpsBoost; cfg.prev = c.prev;
         } catch (Exception ignored) {}
     }
+
+    public static boolean isHudEnabled() { return enabled; }
+    public static void setHudEnabled(boolean value) { enabled = value; save(); }
+    public static boolean isElementEnabled(String id) {
+        return switch (id) {
+            case "brand" -> cfg.showBrand;
+            case "stats" -> cfg.showStats;
+            case "coords" -> cfg.showCoords;
+            case "time" -> cfg.showTime;
+            default -> true;
+        };
+    }
+    public static void setElementEnabled(String id, boolean value) {
+        switch (id) {
+            case "brand" -> cfg.showBrand = value;
+            case "stats" -> cfg.showStats = value;
+            case "coords" -> cfg.showCoords = value;
+            case "time" -> cfg.showTime = value;
+        }
+        save();
+    }
+    public static void toggleFpsBoost() { fpsBoost(MinecraftClient.getInstance(), !cfg.fpsBoost); }
+    public static boolean isFontPackActive() { return fontActive; }
+    public static void cycleAccent() { cfg.accent = (cfg.accent + 1) % ACCENTS.length; save(); }
+    public static void saveFromGui() { save(); }
 
     private static void save() {
         try (Writer w = Files.newBufferedWriter(FILE)) { GSON.toJson(cfg, w); } catch (Exception ignored) {}
