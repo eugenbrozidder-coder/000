@@ -126,7 +126,9 @@ public final class CleanHudClickGui extends Screen {
         info(c, x, 111, "Dark glass interface", "Полностью непрозрачные панели");
         info(c, x, 151, "HUD layout", "Откройте чат и перетаскивайте HUD-панели");
         info(c, x, 191, "Scale", "Колесо мыши над панелью меняет масштаб");
-        plainRow(c, mx, my, x, 232, "Dynamic Island", "Анимированный информер сверху экрана", CleanHudClient.isDynamicIslandEnabled());\n        plainRow(c, mx, my, x, 264, "World particles", "Декоративные частицы вокруг игрока", CleanHudClient.isWorldParticlesEnabled());\n        c.drawText(textRenderer, "PARTICLE STYLE  ·  " + particleStyleName(CleanHudClient.getParticleStyle()), x + 8, 301, CYAN, true);
+        plainRow(c, mx, my, x, 232, "Dynamic Island", "Анимированный информер сверху экрана", CleanHudClient.isDynamicIslandEnabled());
+        plainRow(c, mx, my, x, 264, "World particles", "Декоративные частицы вокруг игрока", CleanHudClient.isWorldParticlesEnabled());
+        c.drawText(textRenderer, "PARTICLE STYLE  ·  " + particleStyleName(CleanHudClient.getParticleStyle()), x + 8, 301, CYAN, true);
     }
 
     private void drawPerformance(DrawContext c, int mx, int my, int x) {
@@ -216,7 +218,9 @@ public final class CleanHudClickGui extends Screen {
                 else if (inside(mouseX, localY, x, 296, 370, 24)) CleanHudClient.cycleHotbarStyle();
             }
             case VISUAL -> {
-                if (at(mouseX, localY, x, 69)) CleanHudClient.cycleAccent();\n                else if (at(mouseX, localY, x, 264)) CleanHudClient.toggleWorldParticles();\n                else if (inside(mouseX, localY, x, 296, 370, 24)) CleanHudClient.cycleParticleStyle();
+                if (at(mouseX, localY, x, 69)) CleanHudClient.cycleAccent();
+                else if (at(mouseX, localY, x, 264)) CleanHudClient.toggleWorldParticles();
+                else if (inside(mouseX, localY, x, 296, 370, 24)) CleanHudClient.cycleParticleStyle();
             }
             case PERFORMANCE -> {
                 if (at(mouseX, localY, x, 69)) CleanHudClient.toggleFpsBoost();
@@ -235,7 +239,11 @@ public final class CleanHudClickGui extends Screen {
         return true;
     }
 
-    private String particleStyleName(int style) {\n        return switch (style) { case 1 -> "SOUL"; case 2 -> "SPARK"; default -> "STAR"; };\n    }\n\n    private String styleName(int style) {
+    private String particleStyleName(int style) {
+        return switch (style) { case 1 -> "SOUL"; case 2 -> "SPARK"; default -> "STAR"; };
+    }
+
+    private String styleName(int style) {
         return switch (style) { case 1 -> "OUTLINE"; case 2 -> "MINIMAL"; default -> "GLASS"; };
     }
 
