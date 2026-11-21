@@ -72,7 +72,7 @@ public class CleanHudClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        ELEMENTS.add(new El("brand", () -> List.of("NLS  /  CLEAN HUD", MinecraftClient.getInstance().getSession().getUsername())));
+        ELEMENTS.add(new El("brand", () -> List.of("NLS VISUALS", MinecraftClient.getInstance().getSession().getUsername())));
         ELEMENTS.add(new El("stats", () -> {
             MinecraftClient mc = MinecraftClient.getInstance();
             List<String> l = new ArrayList<>();
@@ -207,8 +207,16 @@ public class CleanHudClient implements ClientModInitializer {
             m.scale(p.s, p.s, 1f);
             ctx.fill(0, 0, w, h, 0x90000000);
             ctx.fill(0, 0, 2, h, ACCENTS[cfg.accent % ACCENTS.length]);
-            for (int i = 0; i < lines.size(); i++)
-                ctx.drawTextWithShadow(mc.textRenderer, text(lines.get(i)), pad + 3, pad + i * lh, 0xFFFFFFFF);
+            if (el.id().equals("brand")) {
+                ctx.fill(4, 3, 6, h - 3, ACCENTS[cfg.accent % ACCENTS.length]);
+                ctx.drawTextWithShadow(mc.textRenderer, Text.literal("NLS").setStyle(Style.EMPTY.withBold(true)),
+                        pad + 4, pad, ACCENTS[cfg.accent % ACCENTS.length]);
+                ctx.drawTextWithShadow(mc.textRenderer, text("CLEAN HUD  •  " + lines.get(1)),
+                        pad + 4, pad + 12, 0xFFEAF5FA);
+            } else {
+                for (int i = 0; i < lines.size(); i++)
+                    ctx.drawTextWithShadow(mc.textRenderer, text(lines.get(i)), pad + 3, pad + i * lh, 0xFFFFFFFF);
+            }
             if (edit) ctx.drawBorder(0, 0, w, h, el.id().equals(dragging) ? 0xFFFFFFFF : 0x88FFFFFF);
             m.pop();
         }
