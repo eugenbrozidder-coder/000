@@ -14,6 +14,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.GraphicsMode;
 import net.minecraft.client.option.KeyBinding;
@@ -53,6 +55,7 @@ public class CleanHudClient implements ClientModInitializer {
         public boolean animatedHotbar = false;
         public int hotbarStyle = 0;
         public Map<String, Integer> styles = new LinkedHashMap<>();
+        public boolean assistTargetHud = false, assistArmorHud = false, assistPotionHud = false, assistLowHealth = false;
         public int[] prev = null;
     }
     record El(String id, Supplier<List<String>> lines) {}
@@ -119,6 +122,7 @@ public class CleanHudClient implements ClientModInitializer {
             }
         });
         HudRenderCallback.EVENT.register(CleanHudClient::renderHud);
+        HudRenderCallback.EVENT.register(CleanHudClient::renderGameAssist);
         HudRenderCallback.EVENT.register(ItemHotbarRenderer::render);
 
         ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
@@ -235,6 +239,72 @@ public class CleanHudClient implements ClientModInitializer {
         }
     }
 
+    private static void renderGameAssist(DrawContext ctx, RenderTickCounter tick) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (!enabled || mc.player == null || mc.options.hudHidden) return;
+        int sw = mc.getWindow().getScaledWidth(), sh = mc.getWindow().getScaledHeight();
+        int accent = ACCENTS[cfg.accent % ACCENTS.length];
+        if (cfg.assistLowHealth && mc.player.getHealth() <= 6.0f) {
+            int alpha = 40 + (int)(Math.sin((System.currentTimeMillis() % 1200L) / 1200.0 * Math.PI * 2) * 25);
+            ctx.fill(0, 0, sw, 4, (Math.min(90, alpha) << 24) | 0x00FF3030);
+            ctx.fill(0, sh - 4, sw, sh, (Math.min(90, alpha) << 24) | 0x00FF3030);
+            ctx.drawCenteredTextWithShadow(mc.textRenderer, Text.literal("LOW HP  ·  " + (int)mc.player.getHealth() + " HP"), sw / 2, 12, 0xFFFF7777);
+        }
+        if (cfg.assistTargetHud && mc.crosshairTarget instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity target && target.isAlive()) {
+            int x = sw / 2 + 12, y = sh / 2 + 12, w = 142;
+            ctx.fill(x, y, x + w, y + 34, 0xD9101722);
+            ctx.drawBorder(x, y, w, 34, 0xFF31566A);
+            ctx.drawTextWithShadow(mc.textRenderer, target.getName(), x + 7, y + 5, 0xFFF0F4FA);
+            float hp = Math.max(0, target.getHealth()), max = Math.max(1, target.getMaxHealth());
+            ctx.fill(x + 7, y + 19, x + w - 7, y + 25, 0xFF303B49);
+            ctx.fill(x + 7, y + 19, x + 7 + Math.round((w - 14) * Math.min(1f, hp / max)), y + 25, accent);
+            ctx.drawText(mc.textRenderer, String.format(java.util.Locale.ROOT, "%.1f / %.1f HP", hp, max), x + 7, y + 26, 0xFFD7E5F0, false);
+        }
+        if (cfg.assistArmorHud) {
+            int x = sw / 2 - 36, y = sh - 62;
+            for (int i = 0; i < mc.player.getInventory().armor.size(); i++) {
+                var stack = mc.player.getInventory().armor.get(3 - i);
+                int sx = x + i * 18;
+                ctx.fill(sx, y, sx + 17, y + 17, 0xA8101722);
+                if (!stack.isEmpty()) {
+                    ctx.drawItem(stack, sx, y);
+                    int pct = stack.getMaxDamage() == 0 ? 100 : Math.round(100f * (stack.getMaxDamage() - stack.getDamage()) / stack.getMaxDamage());
+                    ctx.drawText(mc.textRenderer, pct + "%", sx, y + 17, pct < 25 ? 0xFFFF7777 : 0xFFEAF5FA, true);
+                }
+            }
+        }
+        if (cfg.assistPotionHud && !mc.player.getStatusEffects().isEmpty()) {
+            int x = sw - 126, y = 8;
+            for (var effect : mc.player.getStatusEffects()) {
+                String name = effect.getEffectType().value().getName().getString();
+                String duration = effect.isInfinite() ? "∞" : net.minecraft.util.StringHelper.formatTicks(effect.getDuration(), 20);
+                ctx.fill(x, y, sw - 8, y + 14, 0xB8101722);
+                ctx.fill(x, y, x + 2, y + 14, accent);
+                ctx.drawText(mc.textRenderer, name + " " + duration, x + 6, y + 3, 0xFFEAF5FA, false);
+                y += 16;
+            }
+        }
+    }
+
+    public static boolean isAssistEnabled(String id) {
+        return switch (id) {
+            case "target" -> cfg.assistTargetHud;
+            case "armor" -> cfg.assistArmorHud;
+            case "potions" -> cfg.assistPotionHud;
+            case "lowhp" -> cfg.assistLowHealth;
+            default -> false;
+        };
+    }
+    public static void toggleAssist(String id) {
+        switch (id) {
+            case "target" -> cfg.assistTargetHud = !cfg.assistTargetHud;
+            case "armor" -> cfg.assistArmorHud = !cfg.assistArmorHud;
+            case "potions" -> cfg.assistPotionHud = !cfg.assistPotionHud;
+            case "lowhp" -> cfg.assistLowHealth = !cfg.assistLowHealth;
+        }
+        save();
+    }
+
     private static Text text(String s) {
         return fontActive ? Text.literal(s).setStyle(Style.EMPTY.withFont(FONT_ID)) : Text.literal(s);
     }
@@ -243,6 +313,8 @@ public class CleanHudClient implements ClientModInitializer {
         cfg.hx = c.hx; cfg.hy = c.hy; cfg.hs = c.hs == 0 ? 1f : c.hs; cfg.accent = Math.max(0, c.accent);
         cfg.showBrand = c.showBrand; cfg.showStats = c.showStats; cfg.showCoords = c.showCoords; cfg.showTime = c.showTime;
         cfg.animatedHotbar = c.animatedHotbar; cfg.hotbarStyle = Math.max(0, Math.min(2, c.hotbarStyle));
+        cfg.assistTargetHud = c.assistTargetHud; cfg.assistArmorHud = c.assistArmorHud;
+        cfg.assistPotionHud = c.assistPotionHud; cfg.assistLowHealth = c.assistLowHealth;
         if (c.styles != null) cfg.styles.putAll(c.styles);
         if (c.pos != null) c.pos.forEach((k, v) -> { if (cfg.pos.containsKey(k) && v != null) cfg.pos.put(k, v); });
     }
