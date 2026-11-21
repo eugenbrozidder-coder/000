@@ -29,16 +29,24 @@ public final class ItemHotbarRenderer {
         int slotW = 25, gap = 3, totalW = 9 * slotW + 8 * gap;
         int startX = center - totalW / 2;
         int alpha = (int)(visibility * 255f);
-        int bg = (alpha << 24) | 0x101722;
-        int slot = (int)(visibility * 0xB8) << 24 | 0x1B2635;
+        int style = CleanHudClient.getHotbarStyle();
+        int bg = (alpha << 24) | (style == 2 ? 0x080D14 : 0x101722);
+        int slot = (int)(visibility * (style == 1 ? 0x20 : 0xB8)) << 24 | 0x1B2635;
         int selected = (int)(visibility * 0xE8) << 24 | 0x183D4B;
 
-        ctx.fill(startX - 7, baseY - 7, startX + totalW + 7, baseY + 31, bg);
-        ctx.fill(startX - 7, baseY - 7, startX + totalW + 7, baseY - 5, (int)(visibility * 0xA0) << 24 | 0x54D6F5);
+        if (style != 2) ctx.fill(startX - 7, baseY - 7, startX + totalW + 7, baseY + 31, bg);
+        if (style == 0) ctx.fill(startX - 7, baseY - 7, startX + totalW + 7, baseY - 5, (int)(visibility * 0xA0) << 24 | 0x54D6F5);
+        else if (style == 1) ctx.drawBorder(startX - 7, baseY - 7, totalW + 14, 38, 0xAA54D6F5);
         for (int i = 0; i < 9; i++) {
             int x = startX + i * (slotW + gap);
             boolean active = i == mc.player.getInventory().selectedSlot;
-            ctx.fill(x, baseY, x + slotW, baseY + slotW, active ? selected : slot);
+            if (style == 0) ctx.fill(x, baseY, x + slotW, baseY + slotW, active ? selected : slot);
+            else if (style == 1) {
+                ctx.fill(x, baseY, x + slotW, baseY + slotW, active ? selected : 0x401B2635);
+                ctx.drawBorder(x, baseY, slotW, slotW, active ? 0xFF54D6F5 : 0x667B91A8);
+            } else if (active) {
+                ctx.fill(x, baseY + slotW - 2, x + slotW, baseY + slotW, CYAN);
+            }
             if (active) {
                 int glowX = startX + Math.round(selectedX * (slotW + gap));
                 ctx.fill(glowX - 1, baseY - 2, glowX + slotW + 1, baseY, CYAN);
