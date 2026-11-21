@@ -91,13 +91,13 @@ public final class CleanHudClickGui extends Screen {
     }
 
     private void drawHud(DrawContext c, int mx, int my, int x) {
-        row(c, mx, my, x, 69, "HUD overlay", "Главный переключатель", CleanHudClient.isHudEnabled());
+        plainRow(c, mx, my, x, 69, "HUD overlay", "Главный переключатель", CleanHudClient.isHudEnabled());
         row(c, mx, my, x, 108, "Brand / Name", "Логотип и никнейм", "brand", CleanHudClient.isElementEnabled("brand"));
         row(c, mx, my, x, 147, "FPS / Ping", "Статистика клиента и задержка", "stats", CleanHudClient.isElementEnabled("stats"));
         row(c, mx, my, x, 186, "Coordinates", "Координаты и направление", "coords", CleanHudClient.isElementEnabled("coords"));
         row(c, mx, my, x, 225, "Clock", "Текущее локальное время", "time", CleanHudClient.isElementEnabled("time"));
-        row(c, mx, my, x, 264, "Animated hotbar", "NLS glass вместо обычной панели", CleanHudClient.isAnimatedHotbarEnabled());
-        ctx.drawText(textRenderer, "HOTBAR STYLE  ·  " + styleName(CleanHudClient.getHotbarStyle()), x + 8, 301, CYAN, true);
+        plainRow(c, mx, my, x, 264, "Animated hotbar", "NLS glass вместо обычной панели", CleanHudClient.isAnimatedHotbarEnabled());
+        c.drawText(textRenderer, "HOTBAR STYLE  ·  " + styleName(CleanHudClient.getHotbarStyle()), x + 8, 301, CYAN, true);
     }
 
     private void drawAssist(DrawContext c, int mx, int my, int x) {
@@ -125,7 +125,7 @@ public final class CleanHudClickGui extends Screen {
     }
 
     private void drawPerformance(DrawContext c, int mx, int my, int x) {
-        row(c, mx, my, x, 69, "FPS Boost", "Минимум частиц, тени выкл., дальность 8", CleanHudClient.cfg.fpsBoost);
+        plainRow(c, mx, my, x, 69, "FPS Boost", "Минимум частиц, тени выкл., дальность 8", CleanHudClient.cfg.fpsBoost);
         info(c, x, 111, "Safe restore", "При выключении возвращаются сохранённые настройки");
         info(c, x, 151, "Quick command", ".fps on  /  .fps off");
     }
@@ -135,6 +135,14 @@ public final class CleanHudClickGui extends Screen {
         info(c, x, 111, "Resource pack", "NLS-Font.zip создаётся автоматически");
         info(c, x, 151, "Font status", CleanHudClient.isFontPackActive() ? "Активен" : "Не активен / нужен перезапуск");
         action(c, mx, my, x, 191, "Rebuild font pack", "Пересканировать папку шрифтов", "REBUILD");
+    }
+
+    private void plainRow(DrawContext c, int mx, int my, int x, int y, String name, String desc, boolean enabled) {
+        card(c, mx, my, x, y, 370, 32);
+        c.drawText(textRenderer, name, x + 10, y + 5, WHITE, true);
+        c.drawText(textRenderer, desc, x + 10, y + 18, MUTED, false);
+        c.fill(x + 316, y + 8, x + 358, y + 24, enabled ? 0xFF286A77 : 0xFF343C49);
+        c.drawText(textRenderer, enabled ? "ON" : "OFF", x + 325, y + 12, enabled ? CYAN : MUTED, true);
     }
 
     private void row(DrawContext c, int mx, int my, int x, int y, String name, String desc, String id, boolean enabled) {
