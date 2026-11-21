@@ -118,7 +118,7 @@ public class CleanHudClient implements ClientModInitializer {
             while (clickGui.wasPressed()) c.setScreen(c.currentScreen instanceof CleanHudClickGui ? null : new CleanHudClickGui());
             while (theme.wasPressed()) { cfg.accent = (cfg.accent + 1) % ACCENTS.length; save(); }
             if (!fontChecked && c.getOverlay() == null) { fontChecked = true; enableFontPack(c); }
-            if (cfg.worldParticles && c.player != null && c.world != null && !c.options.getReducedParticles().getValue() && ticks % 2 == 0) spawnWorldParticles(c);\n            if (++ticks % 20 == 0) {
+            if (cfg.worldParticles && c.player != null && c.world != null && ticks % 2 == 0) spawnWorldParticles(c);\n            if (++ticks % 20 == 0) {
                 fontActive = c.getResourcePackManager().getEnabledIds().contains(PACK_ID);
                 DiscordRpc.details = "Ник: " + c.getSession().getUsername();
                 DiscordRpc.state = c.getCurrentServerEntry() != null ? "Сервер: " + c.getCurrentServerEntry().address
