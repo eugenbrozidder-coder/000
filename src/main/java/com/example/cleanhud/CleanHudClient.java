@@ -54,7 +54,7 @@ public class CleanHudClient implements ClientModInitializer {
         public boolean fpsBoost = false;
         public boolean showBrand = true, showStats = true, showCoords = true, showTime = true;
         public boolean animatedHotbar = false;
-        public boolean dynamicIsland = true;
+        public boolean dynamicIsland = true;\n        public boolean worldParticles = false;\n        public int particleStyle = 0;
         public int hotbarStyle = 0;
         public Map<String, Integer> styles = new LinkedHashMap<>();
         public boolean assistTargetHud = false, assistArmorHud = false, assistPotionHud = false, assistLowHealth = false;
@@ -118,7 +118,7 @@ public class CleanHudClient implements ClientModInitializer {
             while (clickGui.wasPressed()) c.setScreen(c.currentScreen instanceof CleanHudClickGui ? null : new CleanHudClickGui());
             while (theme.wasPressed()) { cfg.accent = (cfg.accent + 1) % ACCENTS.length; save(); }
             if (!fontChecked && c.getOverlay() == null) { fontChecked = true; enableFontPack(c); }
-            if (++ticks % 20 == 0) {
+            if (cfg.worldParticles && c.player != null && c.world != null && !c.options.getReducedParticles().getValue() && ticks % 2 == 0) spawnWorldParticles(c);\n            if (++ticks % 20 == 0) {
                 fontActive = c.getResourcePackManager().getEnabledIds().contains(PACK_ID);
                 DiscordRpc.details = "Ник: " + c.getSession().getUsername();
                 DiscordRpc.state = c.getCurrentServerEntry() != null ? "Сервер: " + c.getCurrentServerEntry().address
@@ -177,6 +177,29 @@ public class CleanHudClient implements ClientModInitializer {
             });
         });
     }
+
+    private static void spawnWorldParticles(MinecraftClient mc) {
+        // Decorative client-only particles: no packets, entity interaction or gameplay automation.
+        var random = java.util.concurrent.ThreadLocalRandom.current();
+        var player = mc.player;
+        for (int i = 0; i < 2; i++) {
+            double angle = random.nextDouble(Math.PI * 2.0);
+            double radius = random.nextDouble(1.8, 4.8);
+            double x = player.getX() + Math.cos(angle) * radius;
+            double z = player.getZ() + Math.sin(angle) * radius;
+            double y = player.getY() + random.nextDouble(0.15, 2.2);
+            switch (Math.floorMod(cfg.particleStyle, 3)) {
+                case 1 -> mc.world.addParticle(net.minecraft.particle.ParticleTypes.SOUL, x, y, z, 0.0, 0.012, 0.0);
+                case 2 -> mc.world.addParticle(net.minecraft.particle.ParticleTypes.WAX_ON, x, y, z, 0.0, 0.008, 0.0);
+                default -> mc.world.addParticle(net.minecraft.particle.ParticleTypes.END_ROD, x, y, z, 0.0, 0.01, 0.0);
+            }
+        }
+    }
+
+    public static boolean isWorldParticlesEnabled() { return cfg.worldParticles; }
+    public static void toggleWorldParticles() { cfg.worldParticles = !cfg.worldParticles; save(); }
+    public static int getParticleStyle() { return Math.floorMod(cfg.particleStyle, 3); }
+    public static void cycleParticleStyle() { cfg.particleStyle = (cfg.particleStyle + 1) % 3; save(); }
 
     private static int handX(int sw) { return sw - 90; }
     private static int handY(int sh) { return sh - 70; }
@@ -389,7 +412,7 @@ public class CleanHudClient implements ClientModInitializer {
     private static void applyLayout(Config c) {
         cfg.hx = c.hx; cfg.hy = c.hy; cfg.hs = c.hs == 0 ? 1f : c.hs; cfg.accent = Math.max(0, c.accent);
         cfg.showBrand = c.showBrand; cfg.showStats = c.showStats; cfg.showCoords = c.showCoords; cfg.showTime = c.showTime;
-        cfg.dynamicIsland = c.dynamicIsland; cfg.animatedHotbar = c.animatedHotbar; cfg.hotbarStyle = Math.max(0, Math.min(2, c.hotbarStyle));
+        cfg.dynamicIsland = c.dynamicIsland; cfg.worldParticles = c.worldParticles; cfg.particleStyle = Math.max(0, c.particleStyle); cfg.animatedHotbar = c.animatedHotbar; cfg.hotbarStyle = Math.max(0, Math.min(2, c.hotbarStyle));
         cfg.assistTargetHud = c.assistTargetHud; cfg.assistArmorHud = c.assistArmorHud;
         cfg.assistPotionHud = c.assistPotionHud; cfg.assistLowHealth = c.assistLowHealth;
         if (c.styles != null) cfg.styles.putAll(c.styles);
