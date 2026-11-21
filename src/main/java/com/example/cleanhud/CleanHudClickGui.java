@@ -89,11 +89,12 @@ public final class CleanHudClickGui extends Screen {
 
     private void drawHud(DrawContext c, int mx, int my, int x) {
         row(c, mx, my, x, 69, "HUD overlay", "Главный переключатель", CleanHudClient.isHudEnabled());
-        row(c, mx, my, x, 108, "Brand / Name", "Логотип и никнейм", CleanHudClient.isElementEnabled("brand"));
-        row(c, mx, my, x, 147, "FPS / Ping", "Статистика клиента и задержка", CleanHudClient.isElementEnabled("stats"));
-        row(c, mx, my, x, 186, "Coordinates", "Координаты и направление", CleanHudClient.isElementEnabled("coords"));
-        row(c, mx, my, x, 225, "Clock", "Текущее локальное время", CleanHudClient.isElementEnabled("time"));
+        row(c, mx, my, x, 108, "Brand / Name", "Логотип и никнейм", "brand", CleanHudClient.isElementEnabled("brand"));
+        row(c, mx, my, x, 147, "FPS / Ping", "Статистика клиента и задержка", "stats", CleanHudClient.isElementEnabled("stats"));
+        row(c, mx, my, x, 186, "Coordinates", "Координаты и направление", "coords", CleanHudClient.isElementEnabled("coords"));
+        row(c, mx, my, x, 225, "Clock", "Текущее локальное время", "time", CleanHudClient.isElementEnabled("time"));
         row(c, mx, my, x, 264, "Animated hotbar", "NLS glass вместо обычной панели", CleanHudClient.isAnimatedHotbarEnabled());
+        ctx.drawText(textRenderer, "HOTBAR STYLE  ·  " + styleName(CleanHudClient.getHotbarStyle()), x + 8, 301, CYAN, true);
     }
 
     private void drawVisual(DrawContext c, int mx, int my, int x) {
@@ -116,10 +117,13 @@ public final class CleanHudClickGui extends Screen {
         action(c, mx, my, x, 191, "Rebuild font pack", "Пересканировать папку шрифтов", "REBUILD");
     }
 
-    private void row(DrawContext c, int mx, int my, int x, int y, String name, String desc, boolean enabled) {
+    private void row(DrawContext c, int mx, int my, int x, int y, String name, String desc, String id, boolean enabled) {
         card(c, mx, my, x, y, 370, 32);
         c.drawText(textRenderer, name, x + 10, y + 5, WHITE, true);
         c.drawText(textRenderer, desc, x + 10, y + 18, MUTED, false);
+        int style = CleanHudClient.getElementStyle(id);
+        c.fill(x + 244, y + 7, x + 302, y + 25, 0xFF26384A);
+        c.drawCenteredTextWithShadow(textRenderer, styleName(style), x + 273, y + 12, CYAN);
         int sx = x + 316;
         c.fill(sx, y + 8, sx + 42, y + 24, enabled ? 0xFF286A77 : 0xFF343C49);
         c.fill(sx + (enabled ? 25 : 2), y + 10, sx + (enabled ? 39 : 16), y + 22, enabled ? CYAN : 0xFF929BA8);
@@ -164,11 +168,12 @@ public final class CleanHudClickGui extends Screen {
         switch (tab) {
             case HUD -> {
                 if (at(mouseX, mouseY, x, 69)) CleanHudClient.setHudEnabled(!CleanHudClient.isHudEnabled());
-                else if (at(mouseX, mouseY, x, 108)) flip("brand");
-                else if (at(mouseX, mouseY, x, 147)) flip("stats");
-                else if (at(mouseX, mouseY, x, 186)) flip("coords");
-                else if (at(mouseX, mouseY, x, 225)) flip("time");
+                else if (moduleAt(mouseX, mouseY, x, 108, "brand")) {}
+                else if (moduleAt(mouseX, mouseY, x, 147, "stats")) {}
+                else if (moduleAt(mouseX, mouseY, x, 186, "coords")) {}
+                else if (moduleAt(mouseX, mouseY, x, 225, "time")) {}
                 else if (at(mouseX, mouseY, x, 264)) CleanHudClient.setAnimatedHotbarEnabled(!CleanHudClient.isAnimatedHotbarEnabled());
+                else if (inside(mouseX, mouseY, x, 296, 370, 24)) CleanHudClient.cycleHotbarStyle();
             }
             case VISUAL -> {
                 if (at(mouseX, mouseY, x, 69)) CleanHudClient.cycleAccent();
@@ -181,6 +186,17 @@ public final class CleanHudClickGui extends Screen {
             }
         }
         return true;
+    }
+
+    private boolean moduleAt(double mx, double my, int x, int y, String id) {
+        if (!at(mx, my, x, y)) return false;
+        if (inside(mx, my, x + 238, y, 70, 32)) CleanHudClient.cycleElementStyle(id);
+        else flip(id);
+        return true;
+    }
+
+    private String styleName(int style) {
+        return switch (style) { case 1 -> "OUTLINE"; case 2 -> "MINIMAL"; default -> "GLASS"; };
     }
 
     private boolean at(double mx, double my, int x, int y) {
