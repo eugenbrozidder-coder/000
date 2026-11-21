@@ -53,6 +53,7 @@ public class CleanHudClient implements ClientModInitializer {
         public boolean fpsBoost = false;
         public boolean showBrand = true, showStats = true, showCoords = true, showTime = true;
         public boolean animatedHotbar = false;
+        public boolean dynamicIsland = true;
         public int hotbarStyle = 0;
         public Map<String, Integer> styles = new LinkedHashMap<>();
         public boolean assistTargetHud = false, assistArmorHud = false, assistPotionHud = false, assistLowHealth = false;
@@ -123,6 +124,7 @@ public class CleanHudClient implements ClientModInitializer {
         });
         HudRenderCallback.EVENT.register(CleanHudClient::renderHud);
         HudRenderCallback.EVENT.register(CleanHudClient::renderGameAssist);
+        HudRenderCallback.EVENT.register(CleanHudClient::renderDynamicIsland);
         HudRenderCallback.EVENT.register(ItemHotbarRenderer::render);
 
         ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
@@ -239,6 +241,45 @@ public class CleanHudClient implements ClientModInitializer {
         }
     }
 
+    private static void renderDynamicIsland(DrawContext ctx, RenderTickCounter tick) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (!enabled || !cfg.dynamicIsland || mc.player == null || mc.options.hudHidden) return;
+        int sw = mc.getWindow().getScaledWidth();
+        String title = "NLS VISUALS";
+        String detail = LocalTime.now().format(TIME) + "  ·  " + mc.getCurrentFps() + " FPS";
+        int accent = ACCENTS[cfg.accent % ACCENTS.length];
+        boolean expanded = false;
+        if (mc.crosshairTarget instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity target && target.isAlive()) {
+            title = target.getName().getString();
+            detail = String.format(java.util.Locale.ROOT, "%.1f HP  ·  TARGET", target.getHealth());
+            expanded = true;
+        } else if (mc.player.getHealth() <= 6f) {
+            title = "LOW HEALTH";
+            detail = String.format(java.util.Locale.ROOT, "%.1f HP  ·  BE CAREFUL", mc.player.getHealth());
+            expanded = true;
+        } else if (!mc.player.getStatusEffects().isEmpty()) {
+            var effect = mc.player.getStatusEffects().iterator().next();
+            title = effect.getEffectType().value().getName().getString();
+            detail = effect.isInfinite() ? "ACTIVE  ·  ∞" : "ACTIVE  ·  " + net.minecraft.util.StringHelper.formatTicks(effect.getDuration(), 20);
+            expanded = true;
+        }
+        float targetWidth = expanded ? Math.max(190, Math.min(270, mc.textRenderer.getWidth(title) + mc.textRenderer.getWidth(detail) + 48)) : 142;
+        islandWidth += (targetWidth - islandWidth) * 0.18f;
+        int w = Math.round(islandWidth), h = expanded ? 38 : 28;
+        int x = (sw - w) / 2, y = 7;
+        ctx.fill(x - 2, y - 2, x + w + 2, y + h + 2, 0x663E657A);
+        ctx.fill(x, y, x + w, y + h, 0xF5060A10);
+        ctx.drawBorder(x, y, w, h, 0xFF263C4C);
+        ctx.fill(x + 11, y + 10, x + 17, y + 16, expanded ? 0xFF69E6B0 : accent);
+        if (expanded) {
+            ctx.drawText(mc.textRenderer, title, x + 25, y + 6, 0xFFF2F7FC, true);
+            ctx.drawText(mc.textRenderer, detail, x + 25, y + 21, 0xFF9EB2C4, false);
+        } else {
+            ctx.drawText(mc.textRenderer, "NLS", x + 26, y + 6, accent, true);
+            ctx.drawText(mc.textRenderer, detail, x + 57, y + 6, 0xFFD6E2EC, false);
+        }
+    }
+
     private static void renderGameAssist(DrawContext ctx, RenderTickCounter tick) {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (!enabled || mc.player == null || mc.options.hudHidden) return;
@@ -312,7 +353,7 @@ public class CleanHudClient implements ClientModInitializer {
     private static void applyLayout(Config c) {
         cfg.hx = c.hx; cfg.hy = c.hy; cfg.hs = c.hs == 0 ? 1f : c.hs; cfg.accent = Math.max(0, c.accent);
         cfg.showBrand = c.showBrand; cfg.showStats = c.showStats; cfg.showCoords = c.showCoords; cfg.showTime = c.showTime;
-        cfg.animatedHotbar = c.animatedHotbar; cfg.hotbarStyle = Math.max(0, Math.min(2, c.hotbarStyle));
+        cfg.dynamicIsland = c.dynamicIsland; cfg.animatedHotbar = c.animatedHotbar; cfg.hotbarStyle = Math.max(0, Math.min(2, c.hotbarStyle));
         cfg.assistTargetHud = c.assistTargetHud; cfg.assistArmorHud = c.assistArmorHud;
         cfg.assistPotionHud = c.assistPotionHud; cfg.assistLowHealth = c.assistLowHealth;
         if (c.styles != null) cfg.styles.putAll(c.styles);
@@ -459,6 +500,8 @@ public class CleanHudClient implements ClientModInitializer {
         } catch (Exception ignored) {}
     }
 
+    public static boolean isDynamicIslandEnabled() { return cfg.dynamicIsland; }
+    public static void setDynamicIslandEnabled(boolean value) { cfg.dynamicIsland = value; save(); }
     public static boolean isAnimatedHotbarEnabled() { return cfg.animatedHotbar; }
     public static void setAnimatedHotbarEnabled(boolean value) { cfg.animatedHotbar = value; save(); }
     public static int getElementStyle(String id) { return Math.max(0, Math.min(2, cfg.styles.getOrDefault(id, 0))); }
