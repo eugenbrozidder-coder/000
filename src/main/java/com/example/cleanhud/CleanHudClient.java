@@ -78,6 +78,7 @@ public class CleanHudClient implements ClientModInitializer {
     private static final Set<String> COMMANDS = Set.of("config", "fps", "rpc", "help", "gps");
     private static boolean enabled = true, fontActive = false, fontPackWritten = false, fontChecked = false;
     private static int ticks = 0;
+    private static float islandWidth = 142f;
     private static String dragging = null;
     private static double grabX, grabY;
 
