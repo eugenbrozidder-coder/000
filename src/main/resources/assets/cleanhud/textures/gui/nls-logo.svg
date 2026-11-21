@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="180" viewBox="0 0 512 180">
+<defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#eafaff"/><stop offset=".55" stop-color="#91efff"/><stop offset="1" stop-color="#35cde9"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<path d="M28 130 Q80 168 154 144" fill="none" stroke="#45d9f3" stroke-width="5" filter="url(#glow)"/>
+<path d="M300 26 Q376 -4 432 32" fill="none" stroke="#45d9f3" stroke-width="5" filter="url(#glow)"/>
+<text x="42" y="112" font-family="Arial,sans-serif" font-size="112" font-weight="900" letter-spacing="-9" fill="url(#g)" filter="url(#glow)">NLS</text>
+<text x="50" y="151" font-family="Arial,sans-serif" font-size="19" letter-spacing="8" fill="#dceef4">CLEAN HUD VISUALS</text>
+</svg>
