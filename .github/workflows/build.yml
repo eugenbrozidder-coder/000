@@ -1,16 +1,29 @@
-name: Build mod
-on: [push, workflow_dispatch]
+name: Build NLS Visuals
+on:
+  push:
+    branches: [ "nls-clickgui-dark-glass" ]
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: 21 }
-      - uses: gradle/actions/setup-gradle@v4
-        with: { gradle-version: "8.12" }
-      - run: gradle build
-      - uses: actions/upload-artifact@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
         with:
-          name: CleanHUD-jar
-          path: build/libs/cleanhud-1.0.0.jar
+          distribution: temurin
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.12'
+      - name: Build mod
+        run: gradle --no-daemon clean build
+      - name: Upload mod JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: NLS-Visuals-1.21.4
+          path: build/libs/*.jar
+          if-no-files-found: error
