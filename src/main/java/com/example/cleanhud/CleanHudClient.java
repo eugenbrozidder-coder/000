@@ -51,6 +51,8 @@ public class CleanHudClient implements ClientModInitializer {
         public boolean fpsBoost = false;
         public boolean showBrand = true, showStats = true, showCoords = true, showTime = true;
         public boolean animatedHotbar = false;
+        public int hotbarStyle = 0;
+        public Map<String, Integer> styles = new LinkedHashMap<>();
         public int[] prev = null;
     }
     record El(String id, Supplier<List<String>> lines) {}
@@ -206,10 +208,20 @@ public class CleanHudClient implements ClientModInitializer {
             m.push();
             m.translate(p.x, p.y, 0);
             m.scale(p.s, p.s, 1f);
-            ctx.fill(0, 0, w, h, 0x90000000);
-            ctx.fill(0, 0, 2, h, ACCENTS[cfg.accent % ACCENTS.length]);
+            int style = getElementStyle(el.id());
+            int accent = ACCENTS[cfg.accent % ACCENTS.length];
+            if (style == 0) {
+                ctx.fill(0, 0, w, h, 0xB0101722);
+                ctx.fill(0, 0, 2, h, accent);
+            } else if (style == 1) {
+                ctx.fill(0, 0, w, h, 0x50101722);
+                ctx.drawBorder(0, 0, w, h, 0xCC000000 | (accent & 0x00FFFFFF));
+            } else {
+                ctx.fill(0, 0, w, 1, accent);
+                ctx.fill(0, h - 1, w, h, 0x665E7185);
+            }
             if (el.id().equals("brand")) {
-                ctx.fill(4, 3, 6, h - 3, ACCENTS[cfg.accent % ACCENTS.length]);
+                if (style == 0) ctx.fill(4, 3, 6, h - 3, accent);
                 ctx.drawTextWithShadow(mc.textRenderer, Text.literal("NLS").setStyle(Style.EMPTY.withBold(true)),
                         pad + 4, pad, ACCENTS[cfg.accent % ACCENTS.length]);
                 ctx.drawTextWithShadow(mc.textRenderer, text("CLEAN HUD  •  " + lines.get(1)),
@@ -230,6 +242,8 @@ public class CleanHudClient implements ClientModInitializer {
     private static void applyLayout(Config c) {
         cfg.hx = c.hx; cfg.hy = c.hy; cfg.hs = c.hs == 0 ? 1f : c.hs; cfg.accent = Math.max(0, c.accent);
         cfg.showBrand = c.showBrand; cfg.showStats = c.showStats; cfg.showCoords = c.showCoords; cfg.showTime = c.showTime;
+        cfg.animatedHotbar = c.animatedHotbar; cfg.hotbarStyle = Math.max(0, Math.min(2, c.hotbarStyle));
+        if (c.styles != null) cfg.styles.putAll(c.styles);
         if (c.pos != null) c.pos.forEach((k, v) -> { if (cfg.pos.containsKey(k) && v != null) cfg.pos.put(k, v); });
     }
 
@@ -375,6 +389,10 @@ public class CleanHudClient implements ClientModInitializer {
 
     public static boolean isAnimatedHotbarEnabled() { return cfg.animatedHotbar; }
     public static void setAnimatedHotbarEnabled(boolean value) { cfg.animatedHotbar = value; save(); }
+    public static int getElementStyle(String id) { return Math.max(0, Math.min(2, cfg.styles.getOrDefault(id, 0))); }
+    public static void cycleElementStyle(String id) { cfg.styles.put(id, (getElementStyle(id) + 1) % 3); save(); }
+    public static int getHotbarStyle() { return Math.max(0, Math.min(2, cfg.hotbarStyle)); }
+    public static void cycleHotbarStyle() { cfg.hotbarStyle = (cfg.hotbarStyle + 1) % 3; save(); }
 
     public static boolean isHudEnabled() { return enabled; }
     public static void setHudEnabled(boolean value) { enabled = value; save(); }
