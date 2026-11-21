@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "cleanhud",
+  "version": "${version}",
+  "name": "NLS Visuals",
+  "description": "NLS: аккуратный HUD, свой шрифт, Discord-статус, FPS-режим.",
+  "authors": ["you"],
+  "license": "MIT",
+  "environment": "client",
+  "mixins": ["cleanhud.mixins.json"],
+  "entrypoints": { "client": ["com.example.cleanhud.CleanHudClient"] },
+  "depends": { "fabricloader": ">=0.16.0", "fabric-api": "*", "minecraft": "1.21.4", "java": ">=21" }
+}
