@@ -58,13 +58,17 @@ public final class CleanHudClickGui extends Screen {
         ctx.drawText(textRenderer, subtitleForTab(), contentX, top + 31, MUTED, false);
         ctx.fill(contentX, top + 48, left + panelW - 18, top + 49, 0xFF31566A);
 
+        // Content rows use panel-local Y coordinates; translate them into the centered panel.
+        ctx.getMatrices().push();
+        ctx.getMatrices().translate(0, top, 0);
         switch (tab) {
-            case HUD -> drawHud(ctx, mouseX, mouseY, contentX);
-            case ASSIST -> drawAssist(ctx, mouseX, mouseY, contentX);
-            case VISUAL -> drawVisual(ctx, mouseX, mouseY, contentX);
-            case PERFORMANCE -> drawPerformance(ctx, mouseX, mouseY, contentX);
-            case FONTS -> drawFonts(ctx, mouseX, mouseY, contentX);
+            case HUD -> drawHud(ctx, mouseX, mouseY - top, contentX);
+            case ASSIST -> drawAssist(ctx, mouseX, mouseY - top, contentX);
+            case VISUAL -> drawVisual(ctx, mouseX, mouseY - top, contentX);
+            case PERFORMANCE -> drawPerformance(ctx, mouseX, mouseY - top, contentX);
+            case FONTS -> drawFonts(ctx, mouseX, mouseY - top, contentX);
         }
+        ctx.getMatrices().pop();
 
         ctx.drawText(textRenderer, "RIGHT SHIFT  •  CLOSE", left + panelW - 132, top + panelH - 17, MUTED, false);
         super.render(ctx, mouseX, mouseY, delta);
@@ -186,6 +190,7 @@ public final class CleanHudClickGui extends Screen {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
         int x = left + 136;
+        double localY = mouseY - top;
         for (int i = 0; i < Tab.values().length; i++) {
             int y = top + 56 + i * 31;
             if (inside(mouseX, mouseY, left + 10, y, 96, 24)) {
@@ -196,28 +201,28 @@ public final class CleanHudClickGui extends Screen {
 
         switch (tab) {
             case ASSIST -> {
-                if (at(mouseX, mouseY, x, 69)) CleanHudClient.toggleAssist("target");
-                else if (at(mouseX, mouseY, x, 108)) CleanHudClient.toggleAssist("armor");
-                else if (at(mouseX, mouseY, x, 147)) CleanHudClient.toggleAssist("potions");
-                else if (at(mouseX, mouseY, x, 186)) CleanHudClient.toggleAssist("lowhp");
+                if (at(mouseX, localY, x, 69)) CleanHudClient.toggleAssist("target");
+                else if (at(mouseX, localY, x, 108)) CleanHudClient.toggleAssist("armor");
+                else if (at(mouseX, localY, x, 147)) CleanHudClient.toggleAssist("potions");
+                else if (at(mouseX, localY, x, 186)) CleanHudClient.toggleAssist("lowhp");
             }
             case HUD -> {
-                if (at(mouseX, mouseY, x, 69)) CleanHudClient.setHudEnabled(!CleanHudClient.isHudEnabled());
-                else if (moduleAt(mouseX, mouseY, x, 108, "brand")) {}
-                else if (moduleAt(mouseX, mouseY, x, 147, "stats")) {}
-                else if (moduleAt(mouseX, mouseY, x, 186, "coords")) {}
-                else if (moduleAt(mouseX, mouseY, x, 225, "time")) {}
-                else if (at(mouseX, mouseY, x, 264)) CleanHudClient.setAnimatedHotbarEnabled(!CleanHudClient.isAnimatedHotbarEnabled());
-                else if (inside(mouseX, mouseY, x, 296, 370, 24)) CleanHudClient.cycleHotbarStyle();
+                if (at(mouseX, localY, x, 69)) CleanHudClient.setHudEnabled(!CleanHudClient.isHudEnabled());
+                else if (moduleAt(mouseX, localY, x, 108, "brand")) {}
+                else if (moduleAt(mouseX, localY, x, 147, "stats")) {}
+                else if (moduleAt(mouseX, localY, x, 186, "coords")) {}
+                else if (moduleAt(mouseX, localY, x, 225, "time")) {}
+                else if (at(mouseX, localY, x, 264)) CleanHudClient.setAnimatedHotbarEnabled(!CleanHudClient.isAnimatedHotbarEnabled());
+                else if (inside(mouseX, localY, x, 296, 370, 24)) CleanHudClient.cycleHotbarStyle();
             }
             case VISUAL -> {
-                if (at(mouseX, mouseY, x, 69)) CleanHudClient.cycleAccent();
+                if (at(mouseX, localY, x, 69)) CleanHudClient.cycleAccent();
             }
             case PERFORMANCE -> {
-                if (at(mouseX, mouseY, x, 69)) CleanHudClient.toggleFpsBoost();
+                if (at(mouseX, localY, x, 69)) CleanHudClient.toggleFpsBoost();
             }
             case FONTS -> {
-                if (at(mouseX, mouseY, x, 191)) CleanHudClient.rebuildFontPack();
+                if (at(mouseX, localY, x, 191)) CleanHudClient.rebuildFontPack();
             }
         }
         return true;
