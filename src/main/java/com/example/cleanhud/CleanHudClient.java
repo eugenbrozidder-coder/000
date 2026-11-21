@@ -48,7 +48,7 @@ public class CleanHudClient implements ClientModInitializer {
         public int accent = 0;
         public String discordAppId = "";
         public boolean fpsBoost = false;
-        public boolean showBrand = true, showStats = true, showCoords = true, showTime = true;
+        public boolean showBrand = true, showStats = true, showCoords = true, showTime = true;\n        public boolean animatedHotbar = false;
         public int[] prev = null;
     }
     record El(String id, Supplier<List<String>> lines) {}
@@ -113,7 +113,7 @@ public class CleanHudClient implements ClientModInitializer {
                         : c.player != null ? "Одиночная игра" : "В меню";
             }
         });
-        HudRenderCallback.EVENT.register(CleanHudClient::renderHud);
+        HudRenderCallback.EVENT.register(CleanHudClient::renderHud);\n        HudRenderCallback.EVENT.register(ItemHotbarRenderer::render);
 
         ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
             if (!(screen instanceof ChatScreen)) return;
@@ -359,7 +359,7 @@ public class CleanHudClient implements ClientModInitializer {
         } catch (Exception ignored) {}
     }
 
-    public static boolean isHudEnabled() { return enabled; }
+    public static boolean isAnimatedHotbarEnabled() { return cfg.animatedHotbar; }\n    public static void setAnimatedHotbarEnabled(boolean value) { cfg.animatedHotbar = value; save(); }\n\n    public static boolean isHudEnabled() { return enabled; }
     public static void setHudEnabled(boolean value) { enabled = value; save(); }
     public static boolean isElementEnabled(String id) {
         return switch (id) {
