@@ -16,7 +16,7 @@ import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.GraphicsMode;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.option.ParticlesMode;
+import net.minecraft.client.option.SimpleOption;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
@@ -266,6 +266,14 @@ public class CleanHudClient implements ClientModInitializer {
         return false;
     }
 
+    private static <T extends Enum<T>> void setEnum(SimpleOption<T> opt, String name) {
+        opt.setValue(Enum.valueOf(opt.getValue().getDeclaringClass(), name));
+    }
+
+    private static <T extends Enum<T>> void setEnumOrdinal(SimpleOption<T> opt, int i) {
+        opt.setValue(opt.getValue().getDeclaringClass().getEnumConstants()[i]);
+    }
+
     /** Снижает нагрузку: mipmap 0 (текстуры без уровней детализации), быстрая графика, минимум частиц и т.д. */
     private static void fpsBoost(MinecraftClient mc, boolean on) {
         var o = mc.options;
@@ -276,7 +284,7 @@ public class CleanHudClient implements ClientModInitializer {
                     o.getBiomeBlendRadius().getValue()};
             o.getMipmapLevels().setValue(0);
             o.getGraphicsMode().setValue(GraphicsMode.FAST);
-            o.getParticles().setValue(ParticlesMode.MINIMAL);
+            setEnum(o.getParticles(), "MINIMAL");
             o.getCloudRenderMode().setValue(CloudRenderMode.OFF);
             o.getEntityShadows().setValue(false);
             o.getViewDistance().setValue(Math.min(o.getViewDistance().getValue(), 8));
@@ -287,7 +295,7 @@ public class CleanHudClient implements ClientModInitializer {
             o.getMipmapLevels().setValue(p[0]);
             o.getViewDistance().setValue(p[1]);
             o.getGraphicsMode().setValue(GraphicsMode.values()[p[2]]);
-            o.getParticles().setValue(ParticlesMode.values()[p[3]]);
+            setEnumOrdinal(o.getParticles(), p[3]);
             o.getCloudRenderMode().setValue(CloudRenderMode.values()[p[4]]);
             o.getEntityShadows().setValue(p[5] == 1);
             o.getBiomeBlendRadius().setValue(p[6]);
