@@ -351,14 +351,20 @@ public class CleanHudClient implements ClientModInitializer {
             ctx.drawCenteredTextWithShadow(mc.textRenderer, Text.literal("LOW HP  ·  " + (int)mc.player.getHealth() + " HP"), sw / 2, 12, 0xFFFF7777);
         }
         if (cfg.assistTargetHud && mc.crosshairTarget instanceof EntityHitResult hit && hit.getEntity() instanceof LivingEntity target && target.isAlive()) {
-            int x = sw / 2 + 12, y = sh / 2 + 12, w = 142;
-            ctx.fill(x, y, x + w, y + 34, 0xD9101722);
-            ctx.drawBorder(x, y, w, 34, 0xFF31566A);
-            ctx.drawTextWithShadow(mc.textRenderer, target.getName(), x + 7, y + 5, 0xFFF0F4FA);
+            int x = sw / 2 + 12, y = sh / 2 + 12, w = 174;
+            ctx.fill(x + 2, y + 2, x + w + 2, y + 49, 0x55000000);
+            ctx.fill(x, y, x + w, y + 47, 0xE8101722);
+            ctx.fill(x, y, x + 2, y + 47, accent);
+            ctx.drawBorder(x, y, w, 47, 0xFF31566A);
+            String targetName = target.getName().getString();
+            if (mc.textRenderer.getWidth(targetName) > 104) targetName = mc.textRenderer.trimToWidth(targetName, 101) + "...";
+            ctx.drawTextWithShadow(mc.textRenderer, targetName, x + 8, y + 5, 0xFFF0F4FA);
             float hp = Math.max(0, target.getHealth()), max = Math.max(1, target.getMaxHealth());
-            ctx.fill(x + 7, y + 19, x + w - 7, y + 25, 0xFF303B49);
-            ctx.fill(x + 7, y + 19, x + 7 + Math.round((w - 14) * Math.min(1f, hp / max)), y + 25, accent);
-            ctx.drawText(mc.textRenderer, String.format(java.util.Locale.ROOT, "%.1f / %.1f HP", hp, max), x + 7, y + 26, 0xFFD7E5F0, false);
+            int barColor = hp / max < 0.25f ? 0xFFFF626E : accent;
+            ctx.fill(x + 8, y + 19, x + w - 8, y + 25, 0xFF303B49);
+            ctx.fill(x + 8, y + 19, x + 8 + Math.round((w - 16) * Math.min(1f, hp / max)), y + 25, barColor);
+            String meta = String.format(java.util.Locale.ROOT, "%.1f / %.1f HP  ·  %.1f m", hp, max, mc.player.distanceTo(target));
+            ctx.drawText(mc.textRenderer, meta, x + 8, y + 31, 0xFFD7E5F0, false);
         }
         if (cfg.assistArmorHud) {
             int x = sw / 2 - 36, y = sh - 62;
