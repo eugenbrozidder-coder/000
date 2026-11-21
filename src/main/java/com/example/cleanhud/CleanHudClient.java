@@ -54,7 +54,9 @@ public class CleanHudClient implements ClientModInitializer {
         public boolean fpsBoost = false;
         public boolean showBrand = true, showStats = true, showCoords = true, showTime = true;
         public boolean animatedHotbar = false;
-        public boolean dynamicIsland = true;\n        public boolean worldParticles = false;\n        public int particleStyle = 0;
+        public boolean dynamicIsland = true;
+        public boolean worldParticles = false;
+        public int particleStyle = 0;
         public int hotbarStyle = 0;
         public Map<String, Integer> styles = new LinkedHashMap<>();
         public boolean assistTargetHud = false, assistArmorHud = false, assistPotionHud = false, assistLowHealth = false;
@@ -118,7 +120,8 @@ public class CleanHudClient implements ClientModInitializer {
             while (clickGui.wasPressed()) c.setScreen(c.currentScreen instanceof CleanHudClickGui ? null : new CleanHudClickGui());
             while (theme.wasPressed()) { cfg.accent = (cfg.accent + 1) % ACCENTS.length; save(); }
             if (!fontChecked && c.getOverlay() == null) { fontChecked = true; enableFontPack(c); }
-            if (cfg.worldParticles && c.player != null && c.world != null && ticks % 2 == 0) spawnWorldParticles(c);\n            if (++ticks % 20 == 0) {
+            if (cfg.worldParticles && c.player != null && c.world != null && ticks % 2 == 0) spawnWorldParticles(c);
+            if (++ticks % 20 == 0) {
                 fontActive = c.getResourcePackManager().getEnabledIds().contains(PACK_ID);
                 DiscordRpc.details = "Ник: " + c.getSession().getUsername();
                 DiscordRpc.state = c.getCurrentServerEntry() != null ? "Сервер: " + c.getCurrentServerEntry().address
