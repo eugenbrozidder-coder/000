@@ -198,7 +198,8 @@ public class CleanHudClient implements ClientModInitializer {
             if (lines.isEmpty()) continue;
             Pos p = cfg.pos.get(el.id());
             int tw = 0;
-            for (String l : lines) tw = Math.max(tw, mc.textRenderer.getWidth(text(l)));\n            if (el.id().equals("brand")) tw = Math.max(tw, mc.textRenderer.getWidth(text("CLEAN HUD  •  " + lines.get(1))));
+            for (String l : lines) tw = Math.max(tw, mc.textRenderer.getWidth(text(l)));
+            if (el.id().equals("brand")) tw = Math.max(tw, mc.textRenderer.getWidth(text("CLEAN HUD  •  " + lines.get(1))));
             int pad = 4, lh = 11, w = tw + pad * 2 + 3, h = lines.size() * lh + pad * 2 - 2;
             sizes.put(el.id(), new int[]{w, h});
             MatrixStack m = ctx.getMatrices();
