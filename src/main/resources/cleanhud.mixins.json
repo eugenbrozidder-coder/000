@@ -2,6 +2,10 @@
   "required": true,
   "package": "com.example.cleanhud.mixin",
   "compatibilityLevel": "JAVA_21",
-  "client": ["HeldItemRendererMixin", "SplashOverlayMixin"],
+  "client": [
+    "HeldItemRendererMixin",
+    "SplashOverlayMixin",
+    "InGameHudMixin"
+  ],
   "injectors": { "defaultRequire": 1 }
 }
