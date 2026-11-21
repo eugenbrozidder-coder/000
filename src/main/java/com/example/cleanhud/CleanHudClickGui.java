@@ -122,6 +122,7 @@ public final class CleanHudClickGui extends Screen {
         info(c, x, 111, "Dark glass interface", "Полностью непрозрачные панели");
         info(c, x, 151, "HUD layout", "Откройте чат и перетаскивайте HUD-панели");
         info(c, x, 191, "Scale", "Колесо мыши над панелью меняет масштаб");
+        plainRow(c, mx, my, x, 232, "Dynamic Island", "Анимированный информер сверху экрана", CleanHudClient.isDynamicIslandEnabled());
     }
 
     private void drawPerformance(DrawContext c, int mx, int my, int x) {
