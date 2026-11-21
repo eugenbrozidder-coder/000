@@ -7,7 +7,7 @@ import org.lwjgl.glfw.GLFW;
 
 /** Opaque NLS Visuals ClickGUI. Uses solid layers to avoid vanilla world blur bleed-through. */
 public final class CleanHudClickGui extends Screen {
-    private enum Tab { HUD, VISUAL, PERFORMANCE, FONTS }
+    private enum Tab { HUD, ASSIST, VISUAL, PERFORMANCE, FONTS }
 
     private Tab tab = Tab.HUD;
     private int left, top, panelW, panelH;
@@ -42,7 +42,7 @@ public final class CleanHudClickGui extends Screen {
         ctx.drawText(textRenderer, "VISUALS  /  CLIENT", left + 18, top + 29, MUTED, false);
         ctx.fill(left + 14, top + 47, left + 102, top + 48, 0xFF31566A);
 
-        String[] names = {"HUD", "VISUAL", "PERFORMANCE", "FONTS"};
+        String[] names = {"HUD", "GAME ASSIST", "VISUAL", "PERFORMANCE", "FONTS"};
         Tab[] tabs = Tab.values();
         for (int i = 0; i < tabs.length; i++) {
             int y = top + 61 + i * 31;
@@ -60,6 +60,7 @@ public final class CleanHudClickGui extends Screen {
 
         switch (tab) {
             case HUD -> drawHud(ctx, mouseX, mouseY, contentX);
+            case ASSIST -> drawAssist(ctx, mouseX, mouseY, contentX);
             case VISUAL -> drawVisual(ctx, mouseX, mouseY, contentX);
             case PERFORMANCE -> drawPerformance(ctx, mouseX, mouseY, contentX);
             case FONTS -> drawFonts(ctx, mouseX, mouseY, contentX);
@@ -72,6 +73,7 @@ public final class CleanHudClickGui extends Screen {
     private String titleForTab() {
         return switch (tab) {
             case HUD -> "HUD MODULES";
+            case ASSIST -> "GAME ASSIST";
             case VISUAL -> "VISUAL SETTINGS";
             case PERFORMANCE -> "PERFORMANCE";
             case FONTS -> "TYPOGRAPHY";
@@ -81,6 +83,7 @@ public final class CleanHudClickGui extends Screen {
     private String subtitleForTab() {
         return switch (tab) {
             case HUD -> "Включайте нужные элементы интерфейса";
+            case ASSIST -> "Игровые помощники и информеры";
             case VISUAL -> "Настройте внешний вид NLS";
             case PERFORMANCE -> "Управление производительностью";
             case FONTS -> "Пользовательские шрифты";
@@ -95,6 +98,23 @@ public final class CleanHudClickGui extends Screen {
         row(c, mx, my, x, 225, "Clock", "Текущее локальное время", "time", CleanHudClient.isElementEnabled("time"));
         row(c, mx, my, x, 264, "Animated hotbar", "NLS glass вместо обычной панели", CleanHudClient.isAnimatedHotbarEnabled());
         ctx.drawText(textRenderer, "HOTBAR STYLE  ·  " + styleName(CleanHudClient.getHotbarStyle()), x + 8, 301, CYAN, true);
+    }
+
+    private void drawAssist(DrawContext c, int mx, int my, int x) {
+        assistRow(c, mx, my, x, 69, "Target HUD", "Здоровье и имя сущности под прицелом", "target");
+        assistRow(c, mx, my, x, 108, "Armor HUD", "Броня и прочность экипировки", "armor");
+        assistRow(c, mx, my, x, 147, "Potion HUD", "Активные эффекты и оставшееся время", "potions");
+        assistRow(c, mx, my, x, 186, "Low HP Warning", "Пульсирующее предупреждение при 6 HP", "lowhp");
+        info(c, x, 232, "Client-side helpers", "Только отображение данных, без отправки игровых действий");
+    }
+
+    private void assistRow(DrawContext c, int mx, int my, int x, int y, String name, String desc, String id) {
+        card(c, mx, my, x, y, 370, 32);
+        c.drawText(textRenderer, name, x + 10, y + 5, WHITE, true);
+        c.drawText(textRenderer, desc, x + 10, y + 18, MUTED, false);
+        boolean on = CleanHudClient.isAssistEnabled(id);
+        c.fill(x + 316, y + 8, x + 358, y + 24, on ? 0xFF286A77 : 0xFF343C49);
+        c.drawText(textRenderer, on ? "ON" : "OFF", x + 325, y + 12, on ? CYAN : MUTED, true);
     }
 
     private void drawVisual(DrawContext c, int mx, int my, int x) {
@@ -166,6 +186,12 @@ public final class CleanHudClickGui extends Screen {
         }
 
         switch (tab) {
+            case ASSIST -> {
+                if (at(mouseX, mouseY, x, 69)) CleanHudClient.toggleAssist("target");
+                else if (at(mouseX, mouseY, x, 108)) CleanHudClient.toggleAssist("armor");
+                else if (at(mouseX, mouseY, x, 147)) CleanHudClient.toggleAssist("potions");
+                else if (at(mouseX, mouseY, x, 186)) CleanHudClient.toggleAssist("lowhp");
+            }
             case HUD -> {
                 if (at(mouseX, mouseY, x, 69)) CleanHudClient.setHudEnabled(!CleanHudClient.isHudEnabled());
                 else if (moduleAt(mouseX, mouseY, x, 108, "brand")) {}
