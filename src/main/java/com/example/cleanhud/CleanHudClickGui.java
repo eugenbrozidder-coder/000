@@ -84,7 +84,7 @@ public final class CleanHudClickGui extends Screen {
         row(c, mx, my, x, 108, "Brand / Name", "Логотип и никнейм", CleanHudClient.isElementEnabled("brand"));
         row(c, mx, my, x, 147, "FPS / Ping", "Статистика клиента и задержка", CleanHudClient.isElementEnabled("stats"));
         row(c, mx, my, x, 186, "Coordinates", "Координаты и направление", CleanHudClient.isElementEnabled("coords"));
-        row(c, mx, my, x, 225, "Clock", "Текущее локальное время", CleanHudClient.isElementEnabled("time"));
+        row(c, mx, my, x, 225, "Clock", "Текущее локальное время", CleanHudClient.isElementEnabled("time"));\n        row(c, mx, my, x, 264, "Animated hotbar", "NLS glass вместо обычной панели", CleanHudClient.isAnimatedHotbarEnabled());
     }
     private void drawVisual(DrawContext c, int mx, int my, int x) {
         action(c, mx, my, x, 69, "Accent color", "Сменить неоновый акцент", "CHANGE");
@@ -147,7 +147,7 @@ public final class CleanHudClickGui extends Screen {
                 else if (at(mouseX, mouseY, x, 108)) flip("brand");
                 else if (at(mouseX, mouseY, x, 147)) flip("stats");
                 else if (at(mouseX, mouseY, x, 186)) flip("coords");
-                else if (at(mouseX, mouseY, x, 225)) flip("time");
+                else if (at(mouseX, mouseY, x, 225)) flip("time");\n                else if (at(mouseX, mouseY, x, 264)) CleanHudClient.setAnimatedHotbarEnabled(!CleanHudClient.isAnimatedHotbarEnabled());
             }
             case VISUAL -> { if (at(mouseX, mouseY, x, 69)) CleanHudClient.cycleAccent(); }
             case PERFORMANCE -> { if (at(mouseX, mouseY, x, 69)) CleanHudClient.toggleFpsBoost(); }
