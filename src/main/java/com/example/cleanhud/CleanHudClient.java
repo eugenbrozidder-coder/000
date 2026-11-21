@@ -103,7 +103,7 @@ public class CleanHudClient implements ClientModInitializer {
                 "key.cleanhud.clickgui", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, "category.cleanhud"));
         ClientTickEvents.END_CLIENT_TICK.register(c -> {
             while (toggle.wasPressed()) enabled = !enabled;
-            while (clickGui.wasPressed()) c.setScreen(new CleanHudClickGui());
+            while (clickGui.wasPressed()) c.setScreen(c.currentScreen instanceof CleanHudClickGui ? null : new CleanHudClickGui());
             while (theme.wasPressed()) { cfg.accent = (cfg.accent + 1) % ACCENTS.length; save(); }
             if (!fontChecked && c.getOverlay() == null) { fontChecked = true; enableFontPack(c); }
             if (++ticks % 20 == 0) {
@@ -215,7 +215,7 @@ public class CleanHudClient implements ClientModInitializer {
     }
 
     private static void applyLayout(Config c) {
-        cfg.hx = c.hx; cfg.hy = c.hy; cfg.hs = c.hs == 0 ? 1f : c.hs; cfg.accent = Math.max(0, c.accent);
+        cfg.hx = c.hx; cfg.hy = c.hy; cfg.hs = c.hs == 0 ? 1f : c.hs; cfg.accent = Math.max(0, c.accent);\n        cfg.showBrand = c.showBrand; cfg.showStats = c.showStats; cfg.showCoords = c.showCoords; cfg.showTime = c.showTime;
         if (c.pos != null) c.pos.forEach((k, v) -> { if (cfg.pos.containsKey(k) && v != null) cfg.pos.put(k, v); });
     }
 
