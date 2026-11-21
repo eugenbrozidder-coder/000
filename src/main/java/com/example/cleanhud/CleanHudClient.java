@@ -13,6 +13,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ChatScreen;
+import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.GraphicsMode;
 import net.minecraft.client.option.KeyBinding;
@@ -48,7 +49,8 @@ public class CleanHudClient implements ClientModInitializer {
         public int accent = 0;
         public String discordAppId = "";
         public boolean fpsBoost = false;
-        public boolean showBrand = true, showStats = true, showCoords = true, showTime = true;\n        public boolean animatedHotbar = false;
+        public boolean showBrand = true, showStats = true, showCoords = true, showTime = true;
+        public boolean animatedHotbar = false;
         public int[] prev = null;
     }
     record El(String id, Supplier<List<String>> lines) {}
@@ -70,7 +72,7 @@ public class CleanHudClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        ELEMENTS.add(new El("brand", () -> List.of("NLS", MinecraftClient.getInstance().getSession().getUsername())));
+        ELEMENTS.add(new El("brand", () -> List.of("NLS  /  CLEAN HUD", MinecraftClient.getInstance().getSession().getUsername())));
         ELEMENTS.add(new El("stats", () -> {
             MinecraftClient mc = MinecraftClient.getInstance();
             List<String> l = new ArrayList<>();
@@ -103,6 +105,7 @@ public class CleanHudClient implements ClientModInitializer {
                 "key.cleanhud.clickgui", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, "category.cleanhud"));
         ClientTickEvents.END_CLIENT_TICK.register(c -> {
             while (toggle.wasPressed()) enabled = !enabled;
+            if (c.currentScreen instanceof TitleScreen && !(c.currentScreen instanceof NlsMainMenu)) c.setScreen(new NlsMainMenu());
             while (clickGui.wasPressed()) c.setScreen(c.currentScreen instanceof CleanHudClickGui ? null : new CleanHudClickGui());
             while (theme.wasPressed()) { cfg.accent = (cfg.accent + 1) % ACCENTS.length; save(); }
             if (!fontChecked && c.getOverlay() == null) { fontChecked = true; enableFontPack(c); }
@@ -113,7 +116,8 @@ public class CleanHudClient implements ClientModInitializer {
                         : c.player != null ? "Одиночная игра" : "В меню";
             }
         });
-        HudRenderCallback.EVENT.register(CleanHudClient::renderHud);\n        HudRenderCallback.EVENT.register(ItemHotbarRenderer::render);
+        HudRenderCallback.EVENT.register(CleanHudClient::renderHud);
+        HudRenderCallback.EVENT.register(ItemHotbarRenderer::render);
 
         ScreenEvents.AFTER_INIT.register((client, screen, w, h) -> {
             if (!(screen instanceof ChatScreen)) return;
@@ -215,7 +219,8 @@ public class CleanHudClient implements ClientModInitializer {
     }
 
     private static void applyLayout(Config c) {
-        cfg.hx = c.hx; cfg.hy = c.hy; cfg.hs = c.hs == 0 ? 1f : c.hs; cfg.accent = Math.max(0, c.accent);\n        cfg.showBrand = c.showBrand; cfg.showStats = c.showStats; cfg.showCoords = c.showCoords; cfg.showTime = c.showTime;
+        cfg.hx = c.hx; cfg.hy = c.hy; cfg.hs = c.hs == 0 ? 1f : c.hs; cfg.accent = Math.max(0, c.accent);
+        cfg.showBrand = c.showBrand; cfg.showStats = c.showStats; cfg.showCoords = c.showCoords; cfg.showTime = c.showTime;
         if (c.pos != null) c.pos.forEach((k, v) -> { if (cfg.pos.containsKey(k) && v != null) cfg.pos.put(k, v); });
     }
 
@@ -359,7 +364,10 @@ public class CleanHudClient implements ClientModInitializer {
         } catch (Exception ignored) {}
     }
 
-    public static boolean isAnimatedHotbarEnabled() { return cfg.animatedHotbar; }\n    public static void setAnimatedHotbarEnabled(boolean value) { cfg.animatedHotbar = value; save(); }\n\n    public static boolean isHudEnabled() { return enabled; }
+    public static boolean isAnimatedHotbarEnabled() { return cfg.animatedHotbar; }
+    public static void setAnimatedHotbarEnabled(boolean value) { cfg.animatedHotbar = value; save(); }
+
+    public static boolean isHudEnabled() { return enabled; }
     public static void setHudEnabled(boolean value) { enabled = value; save(); }
     public static boolean isElementEnabled(String id) {
         return switch (id) {
