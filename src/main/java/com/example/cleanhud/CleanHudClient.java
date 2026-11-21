@@ -96,7 +96,7 @@ public class CleanHudClient implements ClientModInitializer {
         ClientSendMessageEvents.ALLOW_CHAT.register(CleanHudClient::handleChat);
 
         KeyBinding toggle = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.cleanhud.toggle", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, "category.cleanhud"));
+                "key.cleanhud.toggle", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F8, "category.cleanhud"));
         KeyBinding theme = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.cleanhud.theme", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_CONTROL, "category.cleanhud"));
         KeyBinding clickGui = KeyBindingHelper.registerKeyBinding(new KeyBinding(
@@ -381,6 +381,12 @@ public class CleanHudClient implements ClientModInitializer {
     }
     public static void toggleFpsBoost() { fpsBoost(MinecraftClient.getInstance(), !cfg.fpsBoost); }
     public static boolean isFontPackActive() { return fontActive; }
+    public static void rebuildFontPack() {
+        fontPackWritten = false;
+        buildFontPack();
+        if (MinecraftClient.getInstance() != null) enableFontPack(MinecraftClient.getInstance());
+        save();
+    }
     public static void cycleAccent() { cfg.accent = (cfg.accent + 1) % ACCENTS.length; save(); }
     public static void saveFromGui() { save(); }
 
