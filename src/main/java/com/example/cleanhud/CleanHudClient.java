@@ -26,6 +26,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.RotationAxis;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.Reader;
@@ -58,6 +59,8 @@ public class CleanHudClient implements ClientModInitializer {
         public Map<String, Integer> styles = new LinkedHashMap<>();
         public boolean assistTargetHud = false, assistArmorHud = false, assistPotionHud = false, assistLowHealth = false;
         public int[] prev = null;
+        public boolean gpsEnabled = false;
+        public double gpsX = 0, gpsZ = 0;
     }
     record El(String id, Supplier<List<String>> lines) {}
 
@@ -70,7 +73,7 @@ public class CleanHudClient implements ClientModInitializer {
     private static final List<El> ELEMENTS = new ArrayList<>();
     private static final Identifier FONT_ID = Identifier.of("cleanhud", "custom");
     private static final String PACK_NAME = "NLS-Font.zip", PACK_ID = "file/" + PACK_NAME;
-    private static final Set<String> COMMANDS = Set.of("config", "fps", "rpc", "help");
+    private static final Set<String> COMMANDS = Set.of("config", "fps", "rpc", "help", "gps");
     private static boolean enabled = true, fontActive = false, fontPackWritten = false, fontChecked = false;
     private static int ticks = 0;
     private static String dragging = null;
@@ -124,6 +127,7 @@ public class CleanHudClient implements ClientModInitializer {
         });
         HudRenderCallback.EVENT.register(CleanHudClient::renderHud);
         HudRenderCallback.EVENT.register(CleanHudClient::renderGameAssist);
+        HudRenderCallback.EVENT.register(CleanHudClient::renderGps);
         HudRenderCallback.EVENT.register(CleanHudClient::renderDynamicIsland);
         HudRenderCallback.EVENT.register(ItemHotbarRenderer::render);
 
@@ -239,6 +243,38 @@ public class CleanHudClient implements ClientModInitializer {
             if (edit) ctx.drawBorder(0, 0, w, h, el.id().equals(dragging) ? 0xFFFFFFFF : 0x88FFFFFF);
             m.pop();
         }
+    }
+
+    private static void renderGps(DrawContext ctx, RenderTickCounter tick) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (!enabled || !cfg.gpsEnabled || mc.player == null || mc.options.hudHidden) return;
+        double dx = cfg.gpsX - mc.player.getX();
+        double dz = cfg.gpsZ - mc.player.getZ();
+        double distance = Math.sqrt(dx * dx + dz * dz);
+        if (distance < 1.5) {
+            ctx.drawCenteredTextWithShadow(mc.textRenderer, Text.literal("GPS  ·  DESTINATION REACHED"),
+                    mc.getWindow().getScaledWidth() / 2, 54, 0xFF69E6B0);
+            return;
+        }
+        float targetYaw = (float)(Math.toDegrees(Math.atan2(dz, dx)) - 90.0);
+        float relative = targetYaw - mc.player.getYaw();
+        while (relative <= -180f) relative += 360f;
+        while (relative > 180f) relative -= 360f;
+        int cx = mc.getWindow().getScaledWidth() / 2;
+        int cy = 58;
+        int accent = ACCENTS[cfg.accent % ACCENTS.length];
+        ctx.fill(cx - 55, cy - 18, cx + 55, cy + 19, 0xD908111B);
+        ctx.drawBorder(cx - 55, cy - 18, 110, 37, 0xFF294657);
+        MatrixStack matrices = ctx.getMatrices();
+        matrices.push();
+        matrices.translate(cx, cy - 5, 0);
+        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(relative));
+        ctx.drawTextWithShadow(mc.textRenderer, Text.literal("▲"), -4, -6, accent);
+        matrices.pop();
+        String distanceText = distance < 1000 ? String.format(java.util.Locale.ROOT, "%.0f m", distance)
+                : String.format(java.util.Locale.ROOT, "%.2f km", distance / 1000.0);
+        ctx.drawCenteredTextWithShadow(mc.textRenderer, Text.literal(distanceText + "  ·  " +
+                (int)Math.round(cfg.gpsX) + " " + (int)Math.round(cfg.gpsZ)), cx, cy + 7, 0xFFEAF5FA);
     }
 
     private static void renderDynamicIsland(DrawContext ctx, RenderTickCounter tick) {
@@ -406,7 +442,7 @@ public class CleanHudClient implements ClientModInitializer {
                     if (a.length > 1) { cfg.discordAppId = a[1]; save(); DiscordRpc.start(a[1]); msg("Discord Application ID сохранён."); }
                     else msg(".rpc <Application ID с discord.com/developers>");
                 }
-                default -> msg(".config save|load|list <имя>, .fps on|off, .rpc <ID>");
+                default -> msg(".config save|load|list <имя>, .fps on|off, .gps <X> <Z>|off, .rpc <ID>");
             }
         } catch (Exception e) { msg("Ошибка: " + e.getMessage()); }
         return false;
